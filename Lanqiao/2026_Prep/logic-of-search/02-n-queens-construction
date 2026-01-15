@@ -1,0 +1,55 @@
+# record[i] 表示第 i 行的皇后，放在了第几列
+# 例如 record[0] = 5 表示第0行皇后在第5列
+record = [0] * 8 
+ans = 0
+
+# 检查函数：判断第 row 行放在 col 列，是否安全
+# 只需要检查 0 到 row-1 行（前面的行）
+def is_valid(row, col):
+    for i in range(row):
+        # i 是之前的行号，record[i] 是之前的列号
+        previous_col = record[i]
+        
+        # 1. 检查列冲突：如果我们想放的 col 和之前某行的 previous_col 一样
+        if previous_col == col:
+            return False
+            
+        # 2. 检查对角线冲突：行距 == 列距 (形成等腰直角三角形)
+        # abs(当前行 - 之前行) == abs(当前列 - 之前列)
+        if abs(row - i) == abs(col - previous_col):
+            return False
+            
+    return True
+
+def dfs(row):
+    global ans
+    
+    # 【终局判断】
+    # 如果 row 能够走到 8，说明 0-7 行都已经成功放好了皇后
+    if row == 8:
+        ans += 1
+        return
+
+    # 【遍历选择】
+    # 在当前这一行 (row)，尝试每一列 (0 到 7)
+    for col in range(8):
+        # 【前置剪枝】只有在这个位置是安全的（不攻击之前的皇后），才往下走
+        if is_valid(row, col):
+            # 记录：第 row 行选了 col 列
+            record[row] = col
+            
+            # 递归：搞定下一行
+            dfs(row + 1)
+            
+            # 【回溯】
+            # 这里其实不需要显式写 record[row] = 0
+            # 因为下一轮循环的 record[row] = new_col 会自动覆盖旧值
+            # 且回溯回去后，row 变小了，刚才那个 record[row] 的值就被这一层的逻辑“遗忘”了
+
+# 启动
+import time
+start = time.time()
+dfs(0)
+end = time.time()
+print(f"八皇后共有 {ans} 种解法")
+print(f"耗时: {end - start:.6f} 秒")
