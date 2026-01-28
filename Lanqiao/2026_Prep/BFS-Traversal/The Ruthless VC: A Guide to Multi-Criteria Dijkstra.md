@@ -178,8 +178,7 @@ else:
     # 简单判断：如果 path 最后一个不是 S，说明断了
     if path and path[-1] == S:
         print("->".join(map(str, path[::-1])))
-
----
+```
 
 ## 6. 总结 (Summary)
 
