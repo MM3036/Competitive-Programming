@@ -1,0 +1,58 @@
+# 设定无穷大，方便后续比较
+INF = float('inf')
+
+# 1. 接收 N 和 M
+# input().split() 拿到的是字符串列表，需要 map 成整数
+line1 = input().split()
+if not line1: exit() # 防止空输入报错
+N, M = int(line1[0]), int(line1[1])
+
+# 2. 初始化邻接矩阵 (关键步骤！)
+# 开 N+1 的大小，这样下标 1 就是 1 号城市，0 号下标这行我们就弃用
+dist = [[INF] * (N + 1) for _ in range(N + 1)]
+
+# 初始化：自己到自己距离为 0
+for i in range(1, N + 1):
+    dist[i][i] = 0
+
+# 3. 读入 M 条道路信息
+for _ in range(M):
+    u, v, w = map(int, input().split())
+    
+    # 【坑点防御 1】处理重边
+    # 题目说“可能有几条路”，我们只保留最短的那条
+    # 比如输入 1 2 10 和 1 2 5，我们要保留 5
+    # 【坑点防御 2】双向边
+    # u 到 v 和 v 到 u 都要更新
+    dist[u][v] = min(dist[u][v], w)
+    dist[v][u] = min(dist[v][u], w)
+
+# 4. 读入起点和终点
+start_node, end_node = map(int, input().split())
+
+# ==========================================
+# 5. Floyd 核心算法 (背诵部分)
+# ==========================================
+# 第一层 k：枚举中转站 (必须在最外层！)
+for k in range(1, N + 1):
+    # 第二层 i：枚举起点
+    for i in range(1, N + 1):
+        # 优化：如果起点 i 到中转站 k 都不通，那 k 肯定没法帮 i 中转
+        # 这一行不是必须的，但在稀疏图中能快一点点
+        if dist[i][k] == INF: continue
+            
+        # 第三层 j：枚举终点
+        for j in range(1, N + 1):
+            # 状态转移方程：松弛操作
+            # 尝试把 k 插入 i 和 j 中间
+            if dist[i][j] > dist[i][k] + dist[k][j]:
+                dist[i][j] = dist[i][k] + dist[k][j]
+
+# ==========================================
+
+# 6. 输出结果
+# 如果还是无穷大，说明路不通，输出 -1
+if dist[start_node][end_node] == INF:
+    print(-1)
+else:
+    print(dist[start_node][end_node])
