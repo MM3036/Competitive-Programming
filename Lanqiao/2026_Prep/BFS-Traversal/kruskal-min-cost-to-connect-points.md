@@ -1,5 +1,3 @@
----
-
 # [算法笔记] 最小生成树进阶：连接所有点的最小费用（Kruskal 解法）
 
 ## 1. 题目模型与定义
@@ -71,6 +69,73 @@
 
 ---
 
+## 6. 正确答案板块 (Correct Solution)
+
+```python
+import sys
+# 1. 递归深度设置好
+sys.setrecursionlimit(200000)
+
+data = map(int, sys.stdin.read().split())
+iterator = iter(data) # 把它转成迭代器更稳妥
+
+try:
+    N = next(iterator)
+except StopIteration:
+    exit()
+
+li = []
+for _ in range(N):
+    x = next(iterator)
+    y = next(iterator)
+    li.append([x, y])
+
+# --- 修正点 1：造边 ---
+dist = []
+for i in range(N):
+    for j in range(i + 1, N):
+        d = abs(li[i][0] - li[j][0]) + abs(li[i][1] - li[j][1])
+        # 直接往大列表里 append 一个元组 (距离, u, v)
+        dist.append((d, i, j))
+
+# 排序
+dist.sort()
+
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.count = n
+        
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+        
+    def union(self, x, y):
+        root_x = self.find(x)
+        root_y = self.find(y)
+        if root_x != root_y:
+            # --- 修正点 2：大小写拼写修正 ---
+            self.parent[root_x] = root_y 
+            self.count -= 1
+            return True
+        return False
+
+dsu = DSU(N)
+result = 0
+edges_count = 0 # 可选：加个计数器辅助判断
+
+for d, u, v in dist:
+    if dsu.union(u, v):
+        result += d
+        edges_count += 1
+    
+    # 剪枝：如果只剩1个连通分量，或者已经连了 N-1 条边，都可以提前退出
+    if dsu.count == 1:
+        break
+
+print(result)
+```
 ## 5. 总结
 1.  **从点到图**：对于没给边的题目，第一步永远是根据规则把“点”转化成“边列表”。
 2.  **算法选择**：
@@ -80,10 +145,3 @@
 
 ---
 
-## 6. 正确答案板块 (Correct Solution)
-
-```python
-
-```
-
----
