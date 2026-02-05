@@ -101,7 +101,28 @@ for u in range(1, L + 1):
 
 ---
 
-## 4. 心得总结 (Summary)
+## 4.正确答案
+```python
+   L = int(input())
+div_num = [0] * (L + 1)
+#因为从一开始，所以0是空着的，加一其实不用只是绝对安全
+for factor in range(1, L):
+    for i in range(i, L, i):
+        div_num[i] += 1
+#筛法、贡献思想，不再枚举每个数的约数，转为找产生了那些因数
+prefix_sum_div = [0] * (L + 1)
+for j in range(1, L):
+    prefix_sum_div[j] = prefix_sum_div[j - 1] + div_num[j]
+#前缀和，当前答案借助上一个答案生成并存储下来，用空间换时间
+ans = 0
+for u in range(1, L):
+    v = L - u
+    ans += div_num[u] * prefix_sum_div[v]
+```
+
+---
+
+## 5. 心得总结 (Summary)
 
 1.  **逆向思维 (Inverse Thinking)：** 不要去拆解复杂的合数，要去聚合简单的因子。
 2.  **建模先行 (Model First)：** 写代码本质上只是在翻译数学公式。如果公式没推出来，写出来的代码就是垃圾。
