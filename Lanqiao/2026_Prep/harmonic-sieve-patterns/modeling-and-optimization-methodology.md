@@ -2,6 +2,19 @@
 
 > **💡 核心要义：贡献法的核心是思想转变 —— 不再枚举结果，而是分析产生结果的原因。**
 
+## 题目描述
+你需要构造两个矩形，矩形 A 和矩形 B。
+
+### 变量定义
+*   矩形的边长 $W_A, H_A, W_B, H_B$ 均为正整数。
+*   **限制**：两个矩形的面积之积不得超过 $L$。即：$(W_A \cdot H_A) \cdot (W_B \cdot H_B) \le L$。
+*   **能量定义**：矩形的“能量”为它的半周长（即 $W + H$）。
+
+### 目标
+计算在所有满足条件的方案中，（矩形 A 的能量 $\times$ 矩形 B 的能量）的总和。
+
+---
+
 ## 1. 核心思维转变 (Core Paradigm Shift)
 
 解决数论约束问题最关键的觉醒，是从 **模拟思维 (局部视角)** 转向 **贡献思维 (全局视角)**。
@@ -103,21 +116,73 @@ for u in range(1, L + 1):
 
 ## 4.正确答案
 ```python
-   L = int(input())
-div_num = [0] * (L + 1)
-#因为从一开始，所以0是空着的，加一其实不用只是绝对安全
-for factor in range(1, L):
-    for i in range(i, L, i):
-        div_num[i] += 1
-#筛法、贡献思想，不再枚举每个数的约数，转为找产生了那些因数
-prefix_sum_div = [0] * (L + 1)
-for j in range(1, L):
-    prefix_sum_div[j] = prefix_sum_div[j - 1] + div_num[j]
-#前缀和，当前答案借助上一个答案生成并存储下来，用空间换时间
-ans = 0
-for u in range(1, L):
-    v = L - u
-    ans += div_num[u] * prefix_sum_div[v]
+   import sys
+
+# 设置递归深度并不是必须的，但为了好习惯留着，本题不需要递归
+sys.setrecursionlimit(2000)
+
+def solve():
+    try:
+        # 输入 L
+        line = sys.stdin.readline()
+        if not line: return
+        L = int(line.strip())
+    except ValueError:
+        return
+
+    MOD = 10**9 + 7 # 注意：Python里写 1e9+7 得到的是浮点数，要用整数写法
+
+    # ---------------------------------------------------------
+    # 第一步：筛法预处理 (Sieve)
+    # 目标：算出每个面积 area 对应的所有矩形半周长之和
+    # 复杂度：O(L log L)
+    # ---------------------------------------------------------
+    # energy[i] 表示面积为 i 的所有矩形的 (长+宽) 之和
+    energy = [0] * (L + 1)
+    
+    for w in range(1, L + 1):
+        # area 从 w 开始，每次增加 w (w, 2w, 3w...)
+        # 这里的 area 就是当前矩形的面积，w 是宽
+        for area in range(w, L + 1, w):
+            h = area // w      # 算出高
+            weight = w + h     # 半周长
+            energy[area] += weight
+
+    # ---------------------------------------------------------
+    # 第二步：前缀和 (Prefix Sum)
+    # 目标：为了快速算出 1 到 k 范围内所有 energy 的和
+    # 复杂度：O(L)
+    # ---------------------------------------------------------
+    # prefix_E[i] = energy[1] + ... + energy[i]
+    prefix_E = [0] * (L + 1)
+    for i in range(1, L + 1):
+        # 记得一边加一边取模，防止数字过大（虽然Python不怕大数，但取模快一点）
+        prefix_E[i] = (prefix_E[i-1] + energy[i]) % MOD
+
+    # ---------------------------------------------------------
+    # 第三步：统计答案 (Optimization)
+    # 目标：u * v <= L，利用除法消灭内层循环
+    # 复杂度：O(L)
+    # ---------------------------------------------------------
+    ans = 0
+    
+    # 枚举矩形 A 的面积 u
+    for u in range(1, L + 1):
+        # 根据 u * v <= L，算出 v 的最大值
+        max_v = L // u
+        
+        # 既然 v 可以取 1 到 max_v 的任意值
+        # 那么 v 的所有能量之和就是 prefix_E[max_v]
+        sum_v_energy = prefix_E[max_v]
+        
+        # 累加答案：(u 的能量) * (v 能量的总和)
+        # 注意取模
+        term = (energy[u] * sum_v_energy) % MOD
+        ans = (ans + term) % MOD
+
+    print(ans)
+
+solve()
 ```
 
 ---
