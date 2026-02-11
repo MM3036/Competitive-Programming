@@ -1,16 +1,21 @@
 import sys
-s = input()
-#只有一行输入，input输入
-li = ["lqb", "lbq", "blq", "bql", "qlb", "qbl"]
-#通过集合哈希存储，变查找为计算，时间复杂度O（1）
+
+# 使用读取所有输入并去掉首尾空白字符，应对大数据量更稳健
+s = sys.stdin.read().strip()
+
+# 使用集合（Set）实现哈希存储，查找复杂度为 O(1)
+target_set = {"lqb", "lbq", "blq", "bql", "qlb", "qbl"}
+
 ans = 0
 i = 0
-while i + 3 <= len(s):
-    ss = s[i:i+3]
-    if ss in li:
+n = len(s)
+
+while i + 3 <= n:
+    # 这里的切片操作是 O(k)，k=3，总体复杂度 O(n)
+    if s[i:i+3] in target_set:
         ans += 1
-        i += 3
-        #题目说的切割，所以符合标准的不能二次利用
+        i += 3  # 匹配成功，跳过这3个字符（切割）
     else:
-        i += 1
+        i += 1  # 匹配失败，向后移动一位
+        
 print(ans)
